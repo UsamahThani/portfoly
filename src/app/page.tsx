@@ -3,11 +3,8 @@ import Navbar from "@/components/Navbar";
 export default function Home() {
 	return (
 		<>
-			<main>
-				<Navbar />
-				<h1>testings</h1>
-				<div className="bg-primary text-light">Hello!</div>
-			</main>
+			<Navbar />
+			<main className="px-8 py-4"></main>
 		</>
 	);
 }
