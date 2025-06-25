@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Typewriter from "typewriter-effect";
+import HackerText from "@/components/HackerText";
 
 export default function Profile() {
 	return (
@@ -15,11 +16,11 @@ export default function Profile() {
 			</div>
 			<div className="w-auto lg:w-[50%] ">
 				<div className="flex flex-col items-center mt-2s lg:mt-0">
-					<h1 className="futura-med text-5xl lg:text-6xl tracking-wide text-[#8f8f8f]  lg:-ml-37">
-						USAMAH
+					<h1 className="futura-med text-5xl lg:text-6xl tracking-wide lg:-ml-37">
+						<HackerText text="USAMAH" className="text-[#8f8f8f]" />
 					</h1>
-					<h1 className="futura-med text-5xl lg:text-6xl tracking-wide text-gray-600 lg:ml-37">
-						THANI
+					<h1 className="futura-med text-5xl lg:text-6xl tracking-wide lg:ml-37">
+						<HackerText text="THANI" className="text-gray-600" />
 					</h1>
 				</div>
 
