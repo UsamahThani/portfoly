@@ -1,13 +1,27 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "./Logo";
 
 export default function Navbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const toggleMobileMenu = () => {
-		setIsMobileMenuOpen(!isMobileMenuOpen);
+		setIsMobileMenuOpen((prev) => {
+			const newState = !prev;
+			if (typeof window !== "undefined") {
+				document.body.style.overflow = newState ? "hidden" : "auto";
+			}
+			return newState;
+		});
 	};
+
+	useEffect(() => {
+		return () => {
+			if (typeof window !== "undefined") {
+				document.body.style.overflow = "auto";
+			}
+		};
+	}, []);
 
 	// Navigation items array
 	const navItems = [
@@ -18,7 +32,8 @@ export default function Navbar() {
 
 	return (
 		<div>
-			<nav className="block w-full max-w-screen px-4 py-4 mx-auto bg-[#272932] bg-opacity-90 sticky top-3 shadow lg:px-8 backdrop-blur-lg backdrop-saturate-150 z-[9999]">
+			{/* bg-[#272932] */}
+			<nav className="block w-full max-w-screen px-4 py-4 mx-auto  bg-opacity-90 sticky top-3 shadow lg:px-8 backdrop-blur-lg backdrop-saturate-150 z-[9999]">
 				<div className="container flex flex-wrap items-center justify-between mx-auto text-slate-200">
 					<Logo />
 					<div className="lg:hidden">

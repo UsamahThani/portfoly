@@ -18,8 +18,20 @@
 	}
 }
 
+@font-face {
+	font-family: "Futura";
+	src: url("/fonts/futura medium bt.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
 body {
 	background: var(--background);
 	color: var(--foreground);
 	/* font-family: Arial, Helvetica, sans-serif; */
+}
+
+.futura-med {
+	font-family: "Futura", sans-serif;
+	font-weight: 500; /* or whatever weight is closest to "med" */
 }

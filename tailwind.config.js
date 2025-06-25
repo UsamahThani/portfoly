@@ -1,12 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: [
-		"./src/**/*.{js,ts,jsx,tsx}",
-	],
+	content: ["./src/**/*.{js,ts,jsx,tsx}"],
 	theme: {
 		extend: {
 			fontFamily: {
 				sans: ["var(--font-inter)", "sans-serif"],
+				futura: ["'Futura'", "sans-serif"],
+			},
+			animation: {
+				gradient: "gradientBG 0.5s ease infinite",
+			},
+			keyframes: {
+				gradientBG: {
+					"0%, 100%": { backgroundPosition: "0% 50%" },
+					"50%": { backgroundPosition: "100% 50%" },
+				},
 			},
 			colors: {
 				primary: "#546a76",
