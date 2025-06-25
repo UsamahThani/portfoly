@@ -4,7 +4,7 @@ import Typewriter from "typewriter-effect";
 
 export default function Profile() {
 	return (
-		<div className="flex flex-col justify-center max-w-full lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between">
+		<section className="flex flex-col justify-center max-w-full lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between">
 			<div>
 				<Image
 					src={"/images/sam1_fixedbg.png"}
@@ -40,6 +40,6 @@ export default function Profile() {
 					/>
 				</div>
 			</div>
-		</div>
+		</section>
 	);
 }
