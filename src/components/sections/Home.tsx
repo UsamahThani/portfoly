@@ -8,21 +8,7 @@ import "aos/dist/aos.css";
 export default function Home() {
 	useEffect(() => {
 		AOS.init({ duration: 800, once: true });
-
-		const handleScroll = () => {
-			const home = document.getElementById("home");
-			if (!home) return;
-
-			const rect = home.getBoundingClientRect();
-			const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
-
-			document.body.style.overflow = isInView ? "hidden" : "auto";
-		};
-
-		handleScroll(); // initial check
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+	});
 
 	const navItems = [
 		{ name: "Profile", href: "#profile" },
@@ -31,6 +17,7 @@ export default function Home() {
 	];
 
 	const handleNavClick = (href: string) => {
+		document.body.style.overflow = "auto"; // unlock scroll when navigating
 		const el = document.querySelector(href);
 		if (el) {
 			el.scrollIntoView({ behavior: "smooth" });
@@ -40,7 +27,7 @@ export default function Home() {
 	return (
 		<section
 			id="home"
-			className="max-w-full h-screen flex justify-center items-center overflow-hidden relative bg-black"
+			className="max-w-full h-screen flex justify-center items-center relative bg-black"
 		>
 			<div className="relative w-[500px] h-[500px]" data-aos="zoom-in">
 				{/* Static Centered Image */}

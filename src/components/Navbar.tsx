@@ -26,7 +26,8 @@ export default function Navbar() {
 
 	// Navigation items array
 	const navItems = [
-		{ name: "Home", href: "/" },
+		{ name: "Home", href: "#home" },
+		{ name: "Profile", href: "#profile" },
 		{ name: "Projects", href: "#project" },
 		{ name: "Contact", href: "#contact" },
 	];
@@ -34,7 +35,7 @@ export default function Navbar() {
 	return (
 		<div>
 			{/* bg-[#272932] */}
-			<nav className="block w-full max-w-screen px-4 py-4 mx-auto  bg-opacity-90 sticky top-3 shadow lg:px-8 backdrop-blur-lg backdrop-saturate-150 z-[9999] futura-bk">
+			<nav className="block w-full max-w-screen px-4 py-4 mx-auto  bg-opacity-90 shadow lg:px-8 backdrop-blur-lg backdrop-saturate-150 z-[9999] futura-bk">
 				<div className="container flex flex-wrap items-center justify-between mx-auto text-slate-200">
 					{/* <Logo /> */}
 					<Image src={"/fox_white.png"} alt="foxico" width={50} height={50} />

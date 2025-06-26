@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Typewriter from "typewriter-effect";
 import HackerText from "@/components/HackerText";
 
@@ -7,7 +6,7 @@ export default function Profile() {
 	return (
 		<section
 			id="profile"
-			className="flex flex-col justify-center max-w-full lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between"
+			className="flex flex-col justify-center max-w-full h-screen lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between"
 		>
 			<div className="w-[250px] h-[400px] lg:w-[350px] lg:h-[600px]">
 				{/* <Image
