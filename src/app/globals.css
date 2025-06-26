@@ -85,3 +85,27 @@ body {
 		opacity: 1;
 	}
 }
+
+.spin-group {
+	animation: spin-slower 20s linear infinite;
+	/* transform-origin: center; */
+}
+
+.spin-group:hover {
+	animation-play-state: paused;
+}
+
+@keyframes spin-slower {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.spin-group {
+	animation: spin-slower 20s linear infinite;
+	transform-origin: center;
+	transform-box: fill-box; /* IMPORTANT for SVG */
+}

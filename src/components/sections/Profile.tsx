@@ -5,7 +5,10 @@ import HackerText from "@/components/HackerText";
 
 export default function Profile() {
 	return (
-		<section className="flex flex-col justify-center max-w-full lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between">
+		<section
+			id="profile"
+			className="flex flex-col justify-center max-w-full lg:flex-row items-center lg:gap-4 lg:mx-50 lg:justify-between"
+		>
 			<div className="w-[250px] h-[400px] lg:w-[350px] lg:h-[600px]">
 				{/* <Image
 					src={"/images/sam1_nobg.png"}
