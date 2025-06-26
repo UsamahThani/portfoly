@@ -9,6 +9,7 @@ module.exports = {
 			},
 			animation: {
 				gradient: "gradientBG 0.5s ease infinite",
+				"spin-slow": "spin 30s linear infinite",
 			},
 			keyframes: {
 				gradientBG: {
