@@ -63,32 +63,38 @@ export default function Project() {
 				const shuffled = repos.sort(() => 0.5 - Math.random());
 				const selected = shuffled.slice(0, repoNum);
 
-				const colors = [
-					"bg-white/10 backdrop-blur-sm border border-white/20",
-					"bg-purple-300/10 backdrop-blur-sm border border-purple-400/30",
-					"bg-pink-300/10 backdrop-blur-sm border border-pink-400/30",
-					"bg-cyan-300/10 backdrop-blur-sm border border-cyan-400/30",
-					"bg-indigo-300/10 backdrop-blur-sm border border-indigo-400/30",
-					"bg-sky-300/10 backdrop-blur-sm border border-sky-400/30",
+				const baseColors = [
+					"bg-red-500/10 border border-red-500 border-opacity-50",
+					"bg-blue-500/10 border border-blue-500 border-opacity-70",
+					"bg-green-500/10 border border-green-500 border-opacity-70",
+					"bg-yellow-400/10 border border-yellow-400 border-opacity-70",
+					"bg-pink-500/10 border border-pink-500 border-opacity-70",
+					"bg-purple-500/10 border border-purple-500 border-opacity-70",
+					"bg-orange-500/10 border border-orange-500 border-opacity-70",
+					"bg-cyan-500/10 border border-cyan-500 border-opacity-70",
 				];
 
-				const bubbleData: BubbleData[] = selected.map((repo: any) => {
-					const lang = repo.language;
-					const langKey = lang?.toLowerCase();
-					return {
-						color: colors[Math.floor(Math.random() * colors.length)],
-						left: Math.random() * 80,
-						top: Math.random() * 80,
-						repoUrl: repo.html_url,
-						language: lang,
-						iconClass:
-							langKey && languageToDevicon[langKey]
-								? languageToDevicon[langKey]
-								: null,
-						spinDuration: 20 + Math.random() * 10,
-						spinDirection: Math.random() > 0.5 ? "normal" : "reverse",
-					};
-				});
+				const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
+
+				const bubbleData: BubbleData[] = selected.map(
+					(repo: any, index: number) => {
+						const lang = repo.language;
+						const langKey = lang?.toLowerCase();
+						return {
+							color: shuffledColors[index % shuffledColors.length],
+							left: Math.random() * 80,
+							top: Math.random() * 80,
+							repoUrl: repo.html_url,
+							language: lang,
+							iconClass:
+								langKey && languageToDevicon[langKey]
+									? languageToDevicon[langKey]
+									: null,
+							spinDuration: 20 + Math.random() * 10,
+							spinDirection: Math.random() > 0.5 ? "normal" : "reverse",
+						};
+					}
+				);
 
 				setBubbles(bubbleData);
 			} catch (err) {
@@ -118,50 +124,10 @@ export default function Project() {
 			y: (Math.random() - 0.5) * 2,
 		}));
 
-		const showGlow = (
-			side: "top" | "bottom" | "left" | "right",
-			x: number,
-			y: number
-		) => {
-			if (!glow) return;
-			glow.style.display = "block";
-			glow.style.opacity = "1";
-			switch (side) {
-				case "top":
-					glow.style.top = `0px`;
-					glow.style.left = `${x - glowSize / 2}px`;
-					glow.style.width = `${glowSize}px`;
-					glow.style.height = `6px`;
-					break;
-				case "bottom":
-					glow.style.top = `calc(100% - 6px)`;
-					glow.style.left = `${x - glowSize / 2}px`;
-					glow.style.width = `${glowSize}px`;
-					glow.style.height = `6px`;
-					break;
-				case "left":
-					glow.style.left = `0px`;
-					glow.style.top = `${y - glowSize / 2}px`;
-					glow.style.width = `6px`;
-					glow.style.height = `${glowSize}px`;
-					break;
-				case "right":
-					glow.style.left = `calc(100% - 6px)`;
-					glow.style.top = `${y - glowSize / 2}px`;
-					glow.style.width = `6px`;
-					glow.style.height = `${glowSize}px`;
-					break;
-			}
-			setTimeout(() => {
-				glow.style.opacity = "0";
-				glow.style.display = "none";
-			}, 150);
-		};
-
 		const animate = () => {
 			const maxX = container.clientWidth;
 			const maxY = container.clientHeight;
-			const maxSpeed = 2.5;
+			const maxSpeed = 2;
 
 			for (let i = 0; i < bubbleEls.length; i++) {
 				for (let j = i + 1; j < bubbleEls.length; j++) {
@@ -180,13 +146,6 @@ export default function Project() {
 						const temp = velocities[i];
 						velocities[i] = velocities[j];
 						velocities[j] = temp;
-
-						[bubbleEls[i], bubbleEls[j]].forEach((el) => {
-							el.classList.add("ring-2", "ring-white/30");
-							setTimeout(() => {
-								el.classList.remove("ring-2", "ring-white/30");
-							}, 2000);
-						});
 					}
 				}
 			}
@@ -201,21 +160,17 @@ export default function Project() {
 				if (newX <= 0) {
 					newX = 0;
 					velocities[i].x *= -0.95;
-					showGlow("left", 0, newY + bubbleSize / 2);
 				} else if (newX >= maxBubbleX) {
 					newX = maxBubbleX;
 					velocities[i].x *= -0.95;
-					showGlow("right", maxBubbleX, newY + bubbleSize / 2);
 				}
 
 				if (newY <= 0) {
 					newY = 0;
 					velocities[i].y *= -0.95;
-					showGlow("top", newX + bubbleSize / 2, 0);
 				} else if (newY >= maxBubbleY) {
 					newY = maxBubbleY;
 					velocities[i].y *= -0.95;
-					showGlow("bottom", newX + bubbleSize / 2, maxBubbleY);
 				}
 
 				velocities[i].x = Math.max(
@@ -257,11 +212,11 @@ export default function Project() {
 					)}
 				/>
 				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black" />
-				{/* Vignette Top */}
-				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 
-				{/* Vignette Bottom */}
+				{/* Vignette */}
+				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
+
 				{/* Title */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
 					<i className="devicon-github-original text-4xl opacity-10 select-none"></i>
@@ -283,7 +238,7 @@ export default function Project() {
 						href={bubble.repoUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						className={`bubble absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center`}
+						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center transition-shadow duration-300`}
 						style={{
 							left: `${bubble.left}%`,
 							top: `${bubble.top}%`,
@@ -294,11 +249,10 @@ export default function Project() {
 						{bubble.iconClass && (
 							<i className={`${bubble.iconClass} text-[1.8rem]`} />
 						)}
-						<div className="absolute inset-0 rounded-full bg-white opacity-0 scale-100 blur-xl transition-transform transition-opacity duration-300 ease-out group-hover:opacity-30 group-hover:scale-150 group-hover:ease-in -z-10" />
 					</a>
 				))}
 
-				{/* Glow */}
+				{/* Glow (edge collision) - unused but preserved for structure */}
 				<div
 					ref={glowRef}
 					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20 transition-opacity duration-150"
@@ -306,6 +260,7 @@ export default function Project() {
 				></div>
 			</div>
 
+			{/* Styles */}
 			<style jsx>{`
 				@keyframes spin {
 					from {
@@ -314,6 +269,31 @@ export default function Project() {
 					to {
 						transform: rotate(360deg);
 					}
+				}
+
+				.bubble.border-red-500:hover {
+					box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.5);
+				}
+				.bubble.border-blue-500:hover {
+					box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.5);
+				}
+				.bubble.border-green-500:hover {
+					box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.5);
+				}
+				.bubble.border-yellow-400:hover {
+					box-shadow: 0 0 12px 4px rgba(250, 204, 21, 0.5);
+				}
+				.bubble.border-pink-500:hover {
+					box-shadow: 0 0 12px 4px rgba(236, 72, 153, 0.5);
+				}
+				.bubble.border-purple-500:hover {
+					box-shadow: 0 0 12px 4px rgba(168, 85, 247, 0.5);
+				}
+				.bubble.border-orange-500:hover {
+					box-shadow: 0 0 12px 4px rgba(249, 115, 22, 0.5);
+				}
+				.bubble.border-cyan-500:hover {
+					box-shadow: 0 0 12px 4px rgba(6, 182, 212, 0.5);
 				}
 			`}</style>
 		</section>
