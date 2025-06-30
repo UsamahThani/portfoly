@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import HackerText from "../HackerText";
 
 type BubbleData = {
 	color: string;
@@ -160,7 +161,7 @@ export default function Project() {
 		const animate = () => {
 			const maxX = container.clientWidth;
 			const maxY = container.clientHeight;
-			const maxSpeed = 3;
+			const maxSpeed = 2.5;
 
 			for (let i = 0; i < bubbleEls.length; i++) {
 				for (let j = i + 1; j < bubbleEls.length; j++) {
@@ -256,13 +257,23 @@ export default function Project() {
 					)}
 				/>
 				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black" />
+				{/* Vignette Top */}
+				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 
+				{/* Vignette Bottom */}
+				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 				{/* Title */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
-					<h3 className="text-4xl opacity-10 select-none">
-						<i className="devicon-github-original"></i> PROJECTS{" "}
-						<i className="devicon-github-original"></i>
-					</h3>
+					<i className="devicon-github-original text-4xl opacity-10 select-none"></i>
+					&nbsp;
+					<HackerText
+						text="PROJECTS"
+						className="text-4xl opacity-10"
+						onHover={false}
+						delay={10000}
+					/>
+					&nbsp;
+					<i className="devicon-github-original text-4xl opacity-10 select-none"></i>
 				</div>
 
 				{/* Bubbles */}
