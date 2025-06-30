@@ -9,6 +9,21 @@
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--font-inter: var(--font-inter);
+	--animate-meteor-effect: meteor 5s linear infinite;
+
+	@keyframes meteor {
+		0% {
+			transform: rotate(215deg) translateX(0);
+			opacity: 1;
+		}
+		70% {
+			opacity: 1;
+		}
+		100% {
+			transform: rotate(215deg) translateX(-500px);
+			opacity: 0;
+		}
+	}
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,7 +70,8 @@ body {
 .glitch {
 	width: 100%;
 	height: 100%;
-	background: url("/images/sam1_fixedbg.png");
+	/* background: url("/images/sam1_fixedbg.png"); */
+	background: url("/images/pingu.png");
 	background-size: cover;
 	animation: glitch 3.5s infinite steps(1);
 }
@@ -63,7 +79,8 @@ body {
 @keyframes glitch {
 	0%,
 	100% {
-		background: url("/images/sam1_fixedbg.png");
+		/* background: url("/images/sam1_fixedbg.png"); */
+		background: url("/images/pingu.png");
 		background-size: cover;
 	}
 
