@@ -1,8 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import AOS from "aos";
-import "aos/dist/aos.css";
 
 type BubbleData = {
 	color: string;
@@ -43,12 +40,13 @@ const languageToDevicon: Record<string, string> = {
 export default function Project() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const glowRef = useRef<HTMLDivElement>(null);
-	const repoNum = 10;
+	const repoNum = 10; // 🔧 Control how many repo bubbles are shown
 	const bubbleSize = 48;
 	const glowSize = 60;
 
 	const [bubbles, setBubbles] = useState<BubbleData[]>([]);
 
+	// Fetch GitHub repos and set bubbles
 	useEffect(() => {
 		const fetchRepos = async () => {
 			try {
@@ -96,6 +94,30 @@ export default function Project() {
 		fetchRepos();
 	}, [repoNum]);
 
+	// Scroll shake effect
+	useEffect(() => {
+		const handleScroll = () => {
+			if (!containerRef.current) return;
+			const bubbleEls = containerRef.current.querySelectorAll(
+				".bubble"
+			) as NodeListOf<HTMLDivElement>;
+
+			bubbleEls.forEach((bubble) => {
+				const dx = (Math.random() - 0.5) * 10;
+				const dy = (Math.random() - 0.5) * 10;
+				bubble.style.transition = "transform 0.15s ease-out";
+				bubble.style.transform = `translate(${dx}px, ${dy}px)`;
+				setTimeout(() => {
+					bubble.style.transform = "translate(0, 0)";
+				}, 150);
+			});
+		};
+
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	// Floating animation
 	useEffect(() => {
 		if (!containerRef.current || bubbles.length === 0) return;
 
@@ -111,7 +133,6 @@ export default function Project() {
 			x: el.offsetLeft,
 			y: el.offsetTop,
 		}));
-
 		let velocities: Velocity[] = bubbleEls.map(() => ({
 			x: (Math.random() - 0.5) * 2,
 			y: (Math.random() - 0.5) * 2,
@@ -123,7 +144,7 @@ export default function Project() {
 			glow.style.opacity = "1";
 			switch (side) {
 				case "top":
-					glow.style.top = `0px`;
+					glow.style.top = "0px";
 					glow.style.left = `${x - glowSize / 2}px`;
 					glow.style.width = `${glowSize}px`;
 					glow.style.height = `6px`;
@@ -135,7 +156,7 @@ export default function Project() {
 					glow.style.height = `6px`;
 					break;
 				case "left":
-					glow.style.left = `0px`;
+					glow.style.left = "0px";
 					glow.style.top = `${y - glowSize / 2}px`;
 					glow.style.width = `6px`;
 					glow.style.height = `${glowSize}px`;
@@ -175,24 +196,6 @@ export default function Project() {
 						const temp = velocities[i];
 						velocities[i] = velocities[j];
 						velocities[j] = temp;
-
-						[bubbleEls[i], bubbleEls[j]].forEach((el) => {
-							const currentDirection = el.style.animationDirection || "normal";
-							const newDirection =
-								currentDirection === "normal" ? "reverse" : "normal";
-							el.style.animationDirection = newDirection;
-
-							const originalDuration = el.style.animationDuration;
-							const randomDuration = `${10 + Math.random() * 10}s`;
-							el.style.animationDuration = randomDuration;
-
-							el.classList.add("ring-2", "ring-white/30");
-
-							setTimeout(() => {
-								el.style.animationDuration = originalDuration;
-								el.classList.remove("ring-2", "ring-white/30");
-							}, 2000);
-						});
 					}
 				}
 			}
@@ -251,25 +254,9 @@ export default function Project() {
 			<div
 				ref={containerRef}
 				className="relative w-[90vw] h-[150vw] lg:w-[75rem] lg:h-[70vh] flex justify-center items-center overflow-hidden transition-shadow duration-150"
-				data-aos="zoom-in"
 			>
-				{/* Dot Background */}
-				<div
-					className={cn(
-						"absolute inset-0",
-						"[background-size:20px_20px]",
-						"[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
-						"dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
-					)}
-				/>
-				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black"></div>
-
-				{/* Title */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
-					<h3 className="text-4xl opacity-10 select-none">
-						<i className="devicon-github-original"></i> PROJECTS{" "}
-						<i className="devicon-github-original"></i>
-					</h3>
+					<h3 className="text-4xl opacity-10 select-none">PROJECTS</h3>
 				</div>
 
 				{/* Bubbles */}
@@ -279,7 +266,7 @@ export default function Project() {
 						href={bubble.repoUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						className={`bubble absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center`}
+						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center`}
 						style={{
 							left: `${bubble.left}%`,
 							top: `${bubble.top}%`,
@@ -294,7 +281,7 @@ export default function Project() {
 					</a>
 				))}
 
-				{/* Glow */}
+				{/* Glow for border collision */}
 				<div
 					ref={glowRef}
 					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20 transition-opacity duration-150"
@@ -302,6 +289,7 @@ export default function Project() {
 				></div>
 			</div>
 
+			{/* Spin animation */}
 			<style jsx>{`
 				@keyframes spin {
 					from {
