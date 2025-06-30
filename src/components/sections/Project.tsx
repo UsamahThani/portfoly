@@ -43,13 +43,15 @@ const languageToDevicon: Record<string, string> = {
 export default function Project() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const glowRef = useRef<HTMLDivElement>(null);
-	const repoNum = 10;
 	const bubbleSize = 48;
 	const glowSize = 60;
 
 	const [bubbles, setBubbles] = useState<BubbleData[]>([]);
 
 	useEffect(() => {
+		const isMobile = window.innerWidth < 768;
+		const repoNum = isMobile ? 6 : 8;
+
 		const fetchRepos = async () => {
 			try {
 				const res = await fetch(
@@ -94,7 +96,7 @@ export default function Project() {
 		};
 
 		fetchRepos();
-	}, [repoNum]);
+	}, []);
 
 	useEffect(() => {
 		if (!containerRef.current || bubbles.length === 0) return;
@@ -104,8 +106,6 @@ export default function Project() {
 		const bubbleEls = Array.from(
 			container.querySelectorAll(".bubble")
 		) as HTMLElement[];
-
-		type Side = "top" | "bottom" | "left" | "right";
 
 		let positions = bubbleEls.map((el) => ({
 			x: el.offsetLeft,
@@ -117,7 +117,11 @@ export default function Project() {
 			y: (Math.random() - 0.5) * 2,
 		}));
 
-		const showGlow = (side: Side, x: number, y: number) => {
+		const showGlow = (
+			side: "top" | "bottom" | "left" | "right",
+			x: number,
+			y: number
+		) => {
 			if (!glow) return;
 			glow.style.display = "block";
 			glow.style.opacity = "1";
@@ -177,19 +181,8 @@ export default function Project() {
 						velocities[j] = temp;
 
 						[bubbleEls[i], bubbleEls[j]].forEach((el) => {
-							const currentDirection = el.style.animationDirection || "normal";
-							const newDirection =
-								currentDirection === "normal" ? "reverse" : "normal";
-							el.style.animationDirection = newDirection;
-
-							const originalDuration = el.style.animationDuration;
-							const randomDuration = `${10 + Math.random() * 10}s`;
-							el.style.animationDuration = randomDuration;
-
 							el.classList.add("ring-2", "ring-white/30");
-
 							setTimeout(() => {
-								el.style.animationDuration = originalDuration;
 								el.classList.remove("ring-2", "ring-white/30");
 							}, 2000);
 						});
@@ -262,7 +255,7 @@ export default function Project() {
 						"dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
 					)}
 				/>
-				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black"></div>
+				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black" />
 
 				{/* Title */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
