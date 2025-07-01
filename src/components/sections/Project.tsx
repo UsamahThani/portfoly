@@ -338,7 +338,10 @@ export default function Project() {
 						style={{
 							left: `${bubble.left}%`,
 							top: `${bubble.top}%`,
-							animation: `spin ${bubble.spinDuration}s linear infinite`,
+							animationName: "spin",
+							animationDuration: `${bubble.spinDuration}s`,
+							animationTimingFunction: "linear",
+							animationIterationCount: "infinite",
 							animationDirection: bubble.spinDirection,
 							touchAction: "none",
 							cursor: "grab",

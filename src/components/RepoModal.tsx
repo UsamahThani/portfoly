@@ -133,8 +133,8 @@ export default function RepoModal({
 						{/* Title */}
 						<div className="text-2xl font-semibold text-center my-4">
 							<a
-								href={repo.repoUrl}
-								target="_blank"
+								// href={repo.repoUrl}
+								href="/nothing2see"
 								rel="noopener noreferrer"
 								className="text-neutral-100 relative inline-block after:content-[''] after:block after:h-[2px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full"
 							>
