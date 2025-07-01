@@ -13,8 +13,8 @@ const eslintConfig = [
 	...compat.extends("next/core-web-vitals", "next/typescript"),
 	{
 		rules: {
-			"@typescript-eslint/no-explicit-any": "off", // turns off 'any' error
-			"react-hooks/exhaustive-deps": "warn", // show warning instead of error
+			"react/no-unescaped-entities": "off",
+			"@next/next/no-page-custom-font": "off",
 		},
 	},
 ];
