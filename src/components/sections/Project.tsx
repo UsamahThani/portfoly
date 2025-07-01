@@ -118,7 +118,7 @@ export default function Project() {
 							const langRes = await fetch(repo.languages_url);
 							languages = await langRes.json();
 						} catch (err) {
-							console.warn("Failed to fetch languages for", repo.name);
+							console.warn("Failed to fetch languages for", repo.name, err);
 						}
 
 						const allLangIcons = Object.keys(languages)
@@ -176,11 +176,11 @@ export default function Project() {
 			y: (Math.random() - 0.5) * 2,
 		}));
 
-		let isDragging = Array(bubbleEls.length).fill(false);
-		let dragOffset = Array(bubbleEls.length).fill({ x: 0, y: 0 });
-		let lastMousePos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
-		let lastMoveTime = Array(bubbleEls.length).fill(0);
-		let startPos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+		const isDragging = Array(bubbleEls.length).fill(false);
+		const dragOffset = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+		const lastMousePos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+		const lastMoveTime = Array(bubbleEls.length).fill(0);
+		const startPos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
 
 		bubbleEls.forEach((bubble, i) => {
 			bubble.style.cursor = "grab";
@@ -189,7 +189,7 @@ export default function Project() {
 				e.preventDefault();
 				isDragging[i] = true;
 				const rect = bubble.getBoundingClientRect();
-				const containerRect = container.getBoundingClientRect();
+				// const containerRect = container.getBoundingClientRect();
 				dragOffset[i] = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 				startPos[i] = { x: e.clientX, y: e.clientY };
 				lastMousePos[i] = { x: e.clientX, y: e.clientY };

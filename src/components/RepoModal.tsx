@@ -7,10 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
 // Define proper types
-type Language = {
-	name: string;
-	icon: string;
-};
+// type Language = {
+// 	name: string;
+// 	icon: string;
+// };
 
 type RepoData = {
 	name: string;
