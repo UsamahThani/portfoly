@@ -11,12 +11,6 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeExternalLinks from "rehype-external-links";
 import "highlight.js/styles/atom-one-dark.css";
 
-// Define proper types
-// type Language = {
-// 	name: string;
-// 	icon: string;
-// };
-
 type RepoData = {
 	name: string;
 	repoUrl: string;
@@ -41,7 +35,6 @@ export default function RepoModal({
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<boolean>(false);
 
-	// Lock scroll
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
 		return () => {
@@ -49,14 +42,12 @@ export default function RepoModal({
 		};
 	}, []);
 
-	// Fetch README
 	useEffect(() => {
 		if (!repo?.owner?.login || !repo.name) return;
 
 		const fetchReadme = async () => {
 			setLoading(true);
 			setError(false);
-
 			try {
 				const url = `/api/github-readme?owner=${repo.owner.login}&repo=${repo.name}`;
 				const res = await fetch(url);
@@ -88,13 +79,26 @@ export default function RepoModal({
 		fetchReadme();
 	}, [repo]);
 
-	// Prevent render if repo is null
 	if (!repo) return null;
+
+	const [showCreatedDate, setShowCreatedDate] = useState(false);
+	const [showUpdatedDate, setShowUpdatedDate] = useState(false);
+
+	const formatDate = (iso: string) =>
+		new Date(iso).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
+
+	const isTouchDevice = () => {
+		return typeof window !== "undefined" && "ontouchstart" in window;
+	};
 
 	return (
 		<AnimatePresence>
 			<motion.div
-				className="fixed inset-0 z-50 flex justify-center items-center bg-black/60 backdrop-blur-sm"
+				className="fixed inset-0 z-50 flex justify-center items-center bg-black/60 backdrop-blur-sm p-4 sm:p-0"
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}
@@ -103,7 +107,7 @@ export default function RepoModal({
 			>
 				<motion.div
 					className={cn(
-						"relative w-[90vw] max-w-3xl max-h-[90vh] bg-black rounded-3xl p-6 overflow-hidden",
+						"relative w-full sm:w-[90vw] max-w-3xl bg-black rounded-3xl p-4 sm:p-6 overflow-hidden flex flex-col max-h-screen",
 						colorClass
 					)}
 					initial={{ opacity: 0, y: 60, scale: 0.9 }}
@@ -126,7 +130,7 @@ export default function RepoModal({
 					</div>
 
 					{/* Foreground */}
-					<div className="relative z-10 flex flex-col h-full text-white">
+					<div className="relative z-10 flex flex-col h-full text-white overflow-hidden">
 						{/* Title */}
 						<div className="text-2xl font-semibold text-center my-4">
 							<a
@@ -155,14 +159,59 @@ export default function RepoModal({
 						)}
 
 						{/* Dates */}
-						<div className="w-full px-4 flex justify-between text-sm text-neutral-400">
-							<h3>Created: {new Date(repo.created_at).toLocaleDateString()}</h3>
-							<h3>Updated: {new Date(repo.updated_at).toLocaleDateString()}</h3>
+						<div className="w-full px-4 flex justify-between text-sm text-neutral-400 select-none">
+							{/* Created Toggle */}
+							<h3
+								onClick={() => {
+									if (isTouchDevice()) setShowCreatedDate((prev) => !prev);
+								}}
+								onMouseEnter={() => {
+									if (!isTouchDevice()) setShowCreatedDate((prev) => !prev);
+								}}
+								className={cn(
+									"transition-colors duration-300",
+									isTouchDevice() ? "cursor-pointer" : "cursor-default"
+								)}
+							>
+								<motion.span
+									key={showCreatedDate ? "created-date" : "created-label"}
+									initial={{ opacity: 0, y: 4 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -4 }}
+									transition={{ duration: 0.3 }}
+								>
+									{showCreatedDate ? formatDate(repo.created_at) : "Created"}
+								</motion.span>
+							</h3>
+
+							{/* Updated Toggle */}
+							<h3
+								onClick={() => {
+									if (isTouchDevice()) setShowUpdatedDate((prev) => !prev);
+								}}
+								onMouseEnter={() => {
+									if (!isTouchDevice()) setShowUpdatedDate((prev) => !prev);
+								}}
+								className={cn(
+									"transition-colors duration-300",
+									isTouchDevice() ? "cursor-pointer" : "cursor-default"
+								)}
+							>
+								<motion.span
+									key={showUpdatedDate ? "updated-date" : "updated-label"}
+									initial={{ opacity: 0, y: 4 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -4 }}
+									transition={{ duration: 0.3 }}
+								>
+									{showUpdatedDate ? formatDate(repo.updated_at) : "Updated"}
+								</motion.span>
+							</h3>
 						</div>
 
 						{/* README Section */}
 						<div className="flex-1 mt-4 overflow-y-auto px-4">
-							<div className="bg-white/10 backdrop-blur-md border border-gray-500/40 rounded-2xl p-6 max-h-[50vh] overflow-y-auto">
+							<div className="bg-white/10 backdrop-blur-md border border-gray-500/40 rounded-2xl p-6 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto scroll-smooth">
 								<h2 className="text-xl font-semibold mb-4">📘 README</h2>
 								{loading ? (
 									<p className="text-sm text-neutral-300">Loading README...</p>
@@ -191,10 +240,10 @@ export default function RepoModal({
 							</div>
 						</div>
 
-						{/* Close */}
+						{/* Close Button */}
 						<button
 							onClick={onClose}
-							className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors duration-200"
+							className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors duration-200 z-20"
 						>
 							✕
 						</button>

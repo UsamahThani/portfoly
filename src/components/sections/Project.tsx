@@ -317,7 +317,7 @@ export default function Project() {
 				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 
 				{/* Central Label */}
-				<div className="absolute inset-0 flex justify-center items-center -z-10">
+				<div className="absolute inset-0 flex justify-center items-center -z-10 select-none">
 					<i className="devicon-github-original text-4xl opacity-10 select-none" />
 					&nbsp;
 					<HackerText
