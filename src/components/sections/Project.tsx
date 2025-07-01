@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import AOS from "aos";
 import "aos/dist/aos.css";
 import HackerText from "../HackerText";
 
@@ -45,7 +44,7 @@ export default function Project() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const glowRef = useRef<HTMLDivElement>(null);
 	const bubbleSize = 48;
-	const glowSize = 60;
+	// const glowSize = 60;
 
 	const [bubbles, setBubbles] = useState<BubbleData[]>([]);
 
@@ -109,17 +108,17 @@ export default function Project() {
 		if (!containerRef.current || bubbles.length === 0) return;
 
 		const container = containerRef.current;
-		const glow = glowRef.current;
+		// const glow = glowRef.current;
 		const bubbleEls = Array.from(
 			container.querySelectorAll(".bubble")
 		) as HTMLElement[];
 
-		let positions = bubbleEls.map((el) => ({
+		const positions = bubbleEls.map((el) => ({
 			x: el.offsetLeft,
 			y: el.offsetTop,
 		}));
 
-		let velocities: Velocity[] = bubbleEls.map(() => ({
+		const velocities: Velocity[] = bubbleEls.map(() => ({
 			x: (Math.random() - 0.5) * 2,
 			y: (Math.random() - 0.5) * 2,
 		}));
