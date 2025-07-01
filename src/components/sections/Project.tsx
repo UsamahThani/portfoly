@@ -1,8 +1,10 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import "aos/dist/aos.css";
 import HackerText from "../HackerText";
+import RepoModal from "@/components/RepoModal";
 
 type BubbleData = {
 	color: string;
@@ -13,6 +15,8 @@ type BubbleData = {
 	iconClass: string | null;
 	spinDuration: number;
 	spinDirection: "normal" | "reverse";
+	allLanguages?: { name: string; icon: string | null }[];
+	[key: string]: any;
 };
 
 type Velocity = {
@@ -44,9 +48,19 @@ export default function Project() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const glowRef = useRef<HTMLDivElement>(null);
 	const bubbleSize = 48;
-	// const glowSize = 60;
-
 	const [bubbles, setBubbles] = useState<BubbleData[]>([]);
+	const [selectedRepo, setSelectedRepo] = useState<BubbleData | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const openModal = (repo: BubbleData) => {
+		setSelectedRepo(repo);
+		setIsModalOpen(true);
+	};
+
+	const closeModal = () => {
+		setIsModalOpen(false);
+		setSelectedRepo(null);
+	};
 
 	useEffect(() => {
 		const isMobile = window.innerWidth < 768;
@@ -54,10 +68,18 @@ export default function Project() {
 
 		const fetchRepos = async () => {
 			try {
-				const res = await fetch(
-					"https://api.github.com/users/UsamahThani/repos"
-				);
+				const res = await fetch("/api/github-repos");
+
+				if (!res.ok) {
+					console.error("GitHub API error:", res.status, await res.text());
+					return;
+				}
+
 				const repos = await res.json();
+				if (!Array.isArray(repos)) {
+					console.error("Expected array from GitHub API, got:", repos);
+					return;
+				}
 
 				const shuffled = repos.sort(() => 0.5 - Math.random());
 				const selected = shuffled.slice(0, repoNum);
@@ -72,27 +94,46 @@ export default function Project() {
 					"bg-orange-500/10 border border-orange-500 border-opacity-70",
 					"bg-cyan-500/10 border border-cyan-500 border-opacity-70",
 				];
-
 				const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
 
-				const bubbleData: BubbleData[] = selected.map(
-					(repo: any, index: number) => {
-						const lang = repo.language;
-						const langKey = lang?.toLowerCase();
+				const bubbleData: BubbleData[] = await Promise.all(
+					selected.map(async (repo: any, index: number) => {
+						let languages: Record<string, number> = {};
+						try {
+							const langRes = await fetch(repo.languages_url);
+							languages = await langRes.json();
+						} catch (err) {
+							console.warn("Failed to fetch languages for", repo.name);
+						}
+
+						const allLangIcons = Object.keys(languages)
+							.map((lang) => {
+								const key = lang.toLowerCase();
+								return {
+									name: lang,
+									icon: languageToDevicon[key] || null,
+								};
+							})
+							.filter((lang) => lang.icon);
+
+						const langKey = repo.language?.toLowerCase();
+
 						return {
+							...repo,
 							color: shuffledColors[index % shuffledColors.length],
 							left: Math.random() * 80,
 							top: Math.random() * 80,
 							repoUrl: repo.html_url,
-							language: lang,
+							language: repo.language,
 							iconClass:
 								langKey && languageToDevicon[langKey]
 									? languageToDevicon[langKey]
 									: null,
+							allLanguages: allLangIcons,
 							spinDuration: 20 + Math.random() * 10,
 							spinDirection: Math.random() > 0.5 ? "normal" : "reverse",
 						};
-					}
+					})
 				);
 
 				setBubbles(bubbleData);
@@ -106,9 +147,7 @@ export default function Project() {
 
 	useEffect(() => {
 		if (!containerRef.current || bubbles.length === 0) return;
-
 		const container = containerRef.current;
-		// const glow = glowRef.current;
 		const bubbleEls = Array.from(
 			container.querySelectorAll(".bubble")
 		) as HTMLElement[];
@@ -117,11 +156,66 @@ export default function Project() {
 			x: el.offsetLeft,
 			y: el.offsetTop,
 		}));
-
 		const velocities: Velocity[] = bubbleEls.map(() => ({
 			x: (Math.random() - 0.5) * 2,
 			y: (Math.random() - 0.5) * 2,
 		}));
+
+		let isDragging = Array(bubbleEls.length).fill(false);
+		let dragOffset = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+		let lastMousePos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+		let lastMoveTime = Array(bubbleEls.length).fill(0);
+		let startPos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
+
+		bubbleEls.forEach((bubble, i) => {
+			bubble.style.cursor = "grab";
+
+			bubble.addEventListener("pointerdown", (e) => {
+				e.preventDefault();
+				isDragging[i] = true;
+				const rect = bubble.getBoundingClientRect();
+				const containerRect = container.getBoundingClientRect();
+				dragOffset[i] = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+				startPos[i] = { x: e.clientX, y: e.clientY };
+				lastMousePos[i] = { x: e.clientX, y: e.clientY };
+				lastMoveTime[i] = Date.now();
+				bubble.setPointerCapture(e.pointerId);
+				bubble.style.cursor = "grabbing";
+			});
+
+			bubble.addEventListener("pointermove", (e) => {
+				if (!isDragging[i]) return;
+				const containerRect = container.getBoundingClientRect();
+				const x = e.clientX - containerRect.left - dragOffset[i].x;
+				const y = e.clientY - containerRect.top - dragOffset[i].y;
+				positions[i] = { x, y };
+				bubble.style.left = `${x}px`;
+				bubble.style.top = `${y}px`;
+
+				const now = Date.now();
+				const dt = now - lastMoveTime[i];
+				if (dt > 0) {
+					velocities[i].x = ((e.clientX - lastMousePos[i].x) / dt) * 10;
+					velocities[i].y = ((e.clientY - lastMousePos[i].y) / dt) * 10;
+					lastMousePos[i] = { x: e.clientX, y: e.clientY };
+					lastMoveTime[i] = now;
+				}
+			});
+
+			bubble.addEventListener("pointerup", (e) => {
+				isDragging[i] = false;
+				bubble.releasePointerCapture(e.pointerId);
+				bubble.style.cursor = "grab";
+
+				const distX = e.clientX - startPos[i].x;
+				const distY = e.clientY - startPos[i].y;
+				const dragDistance = Math.sqrt(distX * distX + distY * distY);
+
+				if (dragDistance < 5) {
+					openModal(bubbles[i]); // Open modal on tap
+				}
+			});
+		});
 
 		const animate = () => {
 			const maxX = container.clientWidth;
@@ -129,6 +223,8 @@ export default function Project() {
 			const maxSpeed = 2;
 
 			for (let i = 0; i < bubbleEls.length; i++) {
+				if (isDragging[i]) continue;
+
 				for (let j = i + 1; j < bubbleEls.length; j++) {
 					const dx = positions[j].x - positions[i].x;
 					const dy = positions[j].y - positions[i].y;
@@ -141,7 +237,6 @@ export default function Project() {
 						positions[i].y -= overlap * ny;
 						positions[j].x += overlap * nx;
 						positions[j].y += overlap * ny;
-
 						const temp = velocities[i];
 						velocities[i] = velocities[j];
 						velocities[j] = temp;
@@ -150,26 +245,19 @@ export default function Project() {
 			}
 
 			bubbleEls.forEach((bubble, i) => {
+				if (isDragging[i]) return;
 				let newX = positions[i].x + velocities[i].x;
 				let newY = positions[i].y + velocities[i].y;
-
 				const maxBubbleX = maxX - bubble.clientWidth;
 				const maxBubbleY = maxY - bubble.clientHeight;
 
-				if (newX <= 0) {
-					newX = 0;
+				if (newX <= 0 || newX >= maxBubbleX) {
 					velocities[i].x *= -0.95;
-				} else if (newX >= maxBubbleX) {
-					newX = maxBubbleX;
-					velocities[i].x *= -0.95;
+					newX = Math.max(0, Math.min(maxBubbleX, newX));
 				}
-
-				if (newY <= 0) {
-					newY = 0;
+				if (newY <= 0 || newY >= maxBubbleY) {
 					velocities[i].y *= -0.95;
-				} else if (newY >= maxBubbleY) {
-					newY = maxBubbleY;
-					velocities[i].y *= -0.95;
+					newY = Math.max(0, Math.min(maxBubbleY, newY));
 				}
 
 				velocities[i].x = Math.max(
@@ -183,14 +271,12 @@ export default function Project() {
 
 				positions[i].x = newX;
 				positions[i].y = newY;
-
 				bubble.style.left = `${newX}px`;
 				bubble.style.top = `${newY}px`;
 			});
 
 			requestAnimationFrame(animate);
 		};
-
 		animate();
 	}, [bubbles]);
 
@@ -201,7 +287,7 @@ export default function Project() {
 				className="relative w-[90vw] h-[150vw] lg:w-[75rem] lg:h-[70vh] flex justify-center items-center overflow-hidden transition-shadow duration-150"
 				data-aos="zoom-in"
 			>
-				{/* Dot Background */}
+				{/* grid background */}
 				<div
 					className={cn(
 						"absolute inset-0",
@@ -211,14 +297,12 @@ export default function Project() {
 					)}
 				/>
 				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black" />
-
-				{/* Vignette */}
 				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 
-				{/* Title */}
+				{/* central label */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
-					<i className="devicon-github-original text-4xl opacity-10 select-none"></i>
+					<i className="devicon-github-original text-4xl opacity-10 select-none" />
 					&nbsp;
 					<HackerText
 						text="PROJECTS"
@@ -227,39 +311,46 @@ export default function Project() {
 						delay={10000}
 					/>
 					&nbsp;
-					<i className="devicon-github-original text-4xl opacity-10 select-none"></i>
+					<i className="devicon-github-original text-4xl opacity-10 select-none" />
 				</div>
 
-				{/* Bubbles */}
+				{/* bubbles */}
 				{bubbles.map((bubble, i) => (
-					<a
-						key={i}
-						href={bubble.repoUrl}
-						target="_blank"
-						rel="noopener noreferrer"
+					<div
+						key={bubble.id}
 						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center transition-shadow duration-300`}
 						style={{
 							left: `${bubble.left}%`,
 							top: `${bubble.top}%`,
 							animation: `spin ${bubble.spinDuration}s linear infinite`,
 							animationDirection: bubble.spinDirection,
+							touchAction: "none",
+							cursor: "grab",
 						}}
 					>
 						{bubble.iconClass && (
 							<i className={`${bubble.iconClass} text-[1.8rem]`} />
 						)}
-					</a>
+					</div>
 				))}
 
-				{/* Glow (edge collision) - unused but preserved for structure */}
+				{/* glow ball (optional) */}
 				<div
 					ref={glowRef}
 					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20 transition-opacity duration-150"
 					style={{ display: "none" }}
-				></div>
+				/>
 			</div>
 
-			{/* Styles */}
+			{/* modal with dynamic border and all languages */}
+			{isModalOpen && selectedRepo && (
+				<RepoModal
+					repo={selectedRepo}
+					onClose={closeModal}
+					colorClass={selectedRepo.color}
+				/>
+			)}
+
 			<style jsx>{`
 				@keyframes spin {
 					from {
@@ -268,31 +359,6 @@ export default function Project() {
 					to {
 						transform: rotate(360deg);
 					}
-				}
-
-				.bubble.border-red-500:hover {
-					box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.5);
-				}
-				.bubble.border-blue-500:hover {
-					box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.5);
-				}
-				.bubble.border-green-500:hover {
-					box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.5);
-				}
-				.bubble.border-yellow-400:hover {
-					box-shadow: 0 0 12px 4px rgba(250, 204, 21, 0.5);
-				}
-				.bubble.border-pink-500:hover {
-					box-shadow: 0 0 12px 4px rgba(236, 72, 153, 0.5);
-				}
-				.bubble.border-purple-500:hover {
-					box-shadow: 0 0 12px 4px rgba(168, 85, 247, 0.5);
-				}
-				.bubble.border-orange-500:hover {
-					box-shadow: 0 0 12px 4px rgba(249, 115, 22, 0.5);
-				}
-				.bubble.border-cyan-500:hover {
-					box-shadow: 0 0 12px 4px rgba(6, 182, 212, 0.5);
 				}
 			`}</style>
 		</section>
