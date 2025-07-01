@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeHighlight from "rehype-highlight";
+import rehypeExternalLinks from "rehype-external-links";
+import "highlight.js/styles/atom-one-dark.css";
 
 // Define proper types
 // type Language = {
@@ -64,7 +69,12 @@ export default function RepoModal({
 				if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
 
 				const data = await res.json();
-				const decoded = atob(data.content || "").trim();
+				const decoded = new TextDecoder("utf-8")
+					.decode(
+						Uint8Array.from(atob(data.content || ""), (c) => c.charCodeAt(0))
+					)
+					.trim();
+
 				setReadme(decoded || null);
 			} catch (err) {
 				console.error("Error fetching README:", err);
@@ -162,8 +172,20 @@ export default function RepoModal({
 										<p>Hrm... weird, there is nothing here.</p>
 									</div>
 								) : (
-									<div className="prose prose-invert max-w-none text-sm text-neutral-200 animate-fade-in">
-										<ReactMarkdown>{readme}</ReactMarkdown>
+									<div className="prose prose-invert prose-pre:bg-[#1e1e1e] max-w-none animate-fade-in [&_p]:my-4">
+										<ReactMarkdown
+											remarkPlugins={[remarkGfm]}
+											rehypePlugins={[
+												rehypeRaw,
+												rehypeHighlight,
+												[
+													rehypeExternalLinks,
+													{ target: "_blank", rel: ["noopener", "noreferrer"] },
+												],
+											]}
+										>
+											{readme}
+										</ReactMarkdown>
 									</div>
 								)}
 							</div>

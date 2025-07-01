@@ -126,3 +126,13 @@ body {
 	transform-origin: center;
 	transform-box: fill-box; /* IMPORTANT for SVG */
 }
+
+.prose pre code {
+	font-family: "Fira Code", "Courier New", monospace;
+	font-size: 0.85rem;
+}
+
+.prose p {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
