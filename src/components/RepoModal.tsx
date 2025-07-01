@@ -31,9 +31,12 @@ export default function RepoModal({
 	onClose,
 	colorClass,
 }: RepoModalProps) {
+	// Always call hooks unconditionally
 	const [readme, setReadme] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<boolean>(false);
+	const [showCreatedDate, setShowCreatedDate] = useState(false);
+	const [showUpdatedDate, setShowUpdatedDate] = useState(false);
 
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
@@ -81,9 +84,6 @@ export default function RepoModal({
 
 	if (!repo) return null;
 
-	const [showCreatedDate, setShowCreatedDate] = useState(false);
-	const [showUpdatedDate, setShowUpdatedDate] = useState(false);
-
 	const formatDate = (iso: string) =>
 		new Date(iso).toLocaleDateString("en-US", {
 			year: "numeric",
@@ -91,9 +91,8 @@ export default function RepoModal({
 			day: "numeric",
 		});
 
-	const isTouchDevice = () => {
-		return typeof window !== "undefined" && "ontouchstart" in window;
-	};
+	const isTouchDevice = () =>
+		typeof window !== "undefined" && "ontouchstart" in window;
 
 	return (
 		<AnimatePresence>
