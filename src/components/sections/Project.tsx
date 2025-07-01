@@ -6,7 +6,23 @@ import "aos/dist/aos.css";
 import HackerText from "../HackerText";
 import RepoModal from "@/components/RepoModal";
 
-type BubbleData = {
+type GitHubRepo = {
+	id: number;
+	name: string;
+	language: string;
+	languages_url: string;
+	html_url: string;
+	owner: { login: string };
+	created_at: string;
+	updated_at: string;
+};
+
+type Language = {
+	name: string;
+	icon: string | null;
+};
+
+type BubbleData = GitHubRepo & {
 	color: string;
 	left: number;
 	top: number;
@@ -15,8 +31,7 @@ type BubbleData = {
 	iconClass: string | null;
 	spinDuration: number;
 	spinDirection: "normal" | "reverse";
-	allLanguages?: { name: string; icon: string | null }[];
-	[key: string]: any;
+	allLanguages?: Language[];
 };
 
 type Velocity = {
@@ -75,7 +90,7 @@ export default function Project() {
 					return;
 				}
 
-				const repos = await res.json();
+				const repos: GitHubRepo[] = await res.json();
 				if (!Array.isArray(repos)) {
 					console.error("Expected array from GitHub API, got:", repos);
 					return;
@@ -97,7 +112,7 @@ export default function Project() {
 				const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
 
 				const bubbleData: BubbleData[] = await Promise.all(
-					selected.map(async (repo: any, index: number) => {
+					selected.map(async (repo, index) => {
 						let languages: Record<string, number> = {};
 						try {
 							const langRes = await fetch(repo.languages_url);
@@ -212,7 +227,7 @@ export default function Project() {
 				const dragDistance = Math.sqrt(distX * distX + distY * distY);
 
 				if (dragDistance < 5) {
-					openModal(bubbles[i]); // Open modal on tap
+					openModal(bubbles[i]);
 				}
 			});
 		});
@@ -277,6 +292,7 @@ export default function Project() {
 
 			requestAnimationFrame(animate);
 		};
+
 		animate();
 	}, [bubbles]);
 
@@ -287,7 +303,7 @@ export default function Project() {
 				className="relative w-[90vw] h-[150vw] lg:w-[75rem] lg:h-[70vh] flex justify-center items-center overflow-hidden transition-shadow duration-150"
 				data-aos="zoom-in"
 			>
-				{/* grid background */}
+				{/* Background */}
 				<div
 					className={cn(
 						"absolute inset-0",
@@ -300,7 +316,7 @@ export default function Project() {
 				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
 
-				{/* central label */}
+				{/* Central Label */}
 				<div className="absolute inset-0 flex justify-center items-center -z-10">
 					<i className="devicon-github-original text-4xl opacity-10 select-none" />
 					&nbsp;
@@ -314,10 +330,10 @@ export default function Project() {
 					<i className="devicon-github-original text-4xl opacity-10 select-none" />
 				</div>
 
-				{/* bubbles */}
+				{/* Bubbles */}
 				{bubbles.map((bubble, i) => (
 					<div
-						key={bubble.id}
+						key={`${bubble.repoUrl}-${i}`}
 						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center transition-shadow duration-300`}
 						style={{
 							left: `${bubble.left}%`,
@@ -334,7 +350,6 @@ export default function Project() {
 					</div>
 				))}
 
-				{/* glow ball (optional) */}
 				<div
 					ref={glowRef}
 					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20 transition-opacity duration-150"
@@ -342,7 +357,6 @@ export default function Project() {
 				/>
 			</div>
 
-			{/* modal with dynamic border and all languages */}
 			{isModalOpen && selectedRepo && (
 				<RepoModal
 					repo={selectedRepo}

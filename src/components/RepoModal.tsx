@@ -6,8 +6,23 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
+// Define proper types
+type Language = {
+	name: string;
+	icon: string;
+};
+
+type RepoData = {
+	name: string;
+	repoUrl: string;
+	owner: { login: string };
+	created_at: string;
+	updated_at: string;
+	allLanguages?: { name: string; icon: string | null }[];
+};
+
 type RepoModalProps = {
-	repo: any;
+	repo: RepoData | null;
 	onClose: () => void;
 	colorClass?: string;
 };
@@ -17,33 +32,42 @@ export default function RepoModal({
 	onClose,
 	colorClass,
 }: RepoModalProps) {
-	if (!repo) return null;
-
 	const [readme, setReadme] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<boolean>(false);
 
+	// Lock scroll
 	useEffect(() => {
-		if (!repo) return;
+		document.body.style.overflow = "hidden";
+		return () => {
+			document.body.style.overflow = "auto";
+		};
+	}, []);
+
+	// Fetch README
+	useEffect(() => {
+		if (!repo?.owner?.login || !repo.name) return;
 
 		const fetchReadme = async () => {
 			setLoading(true);
 			setError(false);
+
 			try {
 				const url = `/api/github-readme?owner=${repo.owner.login}&repo=${repo.name}`;
 				const res = await fetch(url);
-				if (!res.ok) throw new Error("README not found");
+
+				if (res.status === 404) {
+					setReadme(null);
+					setLoading(false);
+					return;
+				}
+				if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
 
 				const data = await res.json();
 				const decoded = atob(data.content || "").trim();
-
-				if (!decoded) {
-					setReadme(null); // Empty README
-				} else {
-					setReadme(decoded);
-				}
+				setReadme(decoded || null);
 			} catch (err) {
-				console.error(err);
+				console.error("Error fetching README:", err);
 				setError(true);
 				setReadme(null);
 			} finally {
@@ -53,6 +77,9 @@ export default function RepoModal({
 
 		fetchReadme();
 	}, [repo]);
+
+	// Prevent render if repo is null
+	if (!repo) return null;
 
 	return (
 		<AnimatePresence>
@@ -80,14 +107,10 @@ export default function RepoModal({
 							ease: [0.22, 1, 0.36, 1],
 						},
 					}}
-					transition={{
-						type: "spring",
-						stiffness: 300,
-						damping: 24,
-					}}
+					transition={{ type: "spring", stiffness: 300, damping: 24 }}
 					onClick={(e) => e.stopPropagation()}
 				>
-					{/* Meteors background */}
+					{/* Meteors */}
 					<div className="absolute inset-0 z-0 pointer-events-none">
 						<Meteors number={30} />
 					</div>
@@ -106,12 +129,12 @@ export default function RepoModal({
 							</a>
 						</div>
 
-						{/* All language icons */}
-						{repo.allLanguages?.length > 0 && (
+						{/* Language icons */}
+						{repo.allLanguages && repo.allLanguages.length > 0 && (
 							<div className="flex flex-wrap justify-center gap-3 mb-4 px-4">
-								{repo.allLanguages.map((lang: any, index: number) => (
+								{repo.allLanguages.map((lang, index) => (
 									<div
-										key={`${lang.name || "lang"}-${index}`}
+										key={`${lang.name}-${index}`}
 										title={lang.name}
 										className="rounded-full w-10 h-10 border border-white/20 flex items-center justify-center"
 									>
@@ -123,15 +146,11 @@ export default function RepoModal({
 
 						{/* Dates */}
 						<div className="w-full px-4 flex justify-between text-sm text-neutral-400">
-							<h3>
-								Created: {new Date(repo.created_at || "").toLocaleDateString()}
-							</h3>
-							<h3>
-								Updated: {new Date(repo.updated_at || "").toLocaleDateString()}
-							</h3>
+							<h3>Created: {new Date(repo.created_at).toLocaleDateString()}</h3>
+							<h3>Updated: {new Date(repo.updated_at).toLocaleDateString()}</h3>
 						</div>
 
-						{/* README */}
+						{/* README Section */}
 						<div className="flex-1 mt-4 overflow-y-auto px-4">
 							<div className="bg-white/10 backdrop-blur-md border border-gray-500/40 rounded-2xl p-6 max-h-[50vh] overflow-y-auto">
 								<h2 className="text-xl font-semibold mb-4">📘 README</h2>
@@ -150,7 +169,7 @@ export default function RepoModal({
 							</div>
 						</div>
 
-						{/* Close button */}
+						{/* Close */}
 						<button
 							onClick={onClose}
 							className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors duration-200"
@@ -159,23 +178,23 @@ export default function RepoModal({
 						</button>
 					</div>
 				</motion.div>
-			</motion.div>
 
-			<style jsx>{`
-				@keyframes fade-in {
-					from {
-						opacity: 0;
-						transform: translateY(4px);
+				<style jsx>{`
+					@keyframes fade-in {
+						from {
+							opacity: 0;
+							transform: translateY(4px);
+						}
+						to {
+							opacity: 1;
+							transform: translateY(0);
+						}
 					}
-					to {
-						opacity: 1;
-						transform: translateY(0);
+					.animate-fade-in {
+						animation: fade-in 0.3s ease-out;
 					}
-				}
-				.animate-fade-in {
-					animation: fade-in 0.3s ease-out;
-				}
-			`}</style>
+				`}</style>
+			</motion.div>
 		</AnimatePresence>
 	);
 }
