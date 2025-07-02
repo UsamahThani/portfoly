@@ -23,15 +23,16 @@ type Language = {
 };
 
 type BubbleData = GitHubRepo & {
+	repoUrl: string;
 	color: string;
 	left: number;
 	top: number;
-	repoUrl: string;
-	language: string | null;
 	iconClass: string | null;
 	spinDuration: number;
 	spinDirection: "normal" | "reverse";
 	allLanguages?: Language[];
+	readme?: string;
+	readmePath?: string;
 };
 
 type Velocity = {
@@ -48,6 +49,7 @@ const languageToDevicon: Record<string, string> = {
 	java: "devicon-java-plain colored",
 	c: "devicon-c-plain colored",
 	"c++": "devicon-cplusplus-plain colored",
+	csharp: "devicon-csharp-plain colored", // ✅ C#
 	php: "devicon-php-plain colored",
 	ruby: "devicon-ruby-plain colored",
 	go: "devicon-go-plain colored",
@@ -57,6 +59,8 @@ const languageToDevicon: Record<string, string> = {
 	dart: "devicon-dart-plain colored",
 	swift: "devicon-swift-plain colored",
 	"jupyter notebook": "devicon-jupyter-plain colored",
+	bootstrap: "devicon-bootstrap-plain colored", // ✅ Bootstrap
+	jquery: "devicon-jquery-plain colored", // ✅ jQuery
 };
 
 export default function Project() {
@@ -81,65 +85,48 @@ export default function Project() {
 		const isMobile = window.innerWidth < 768;
 		const repoNum = isMobile ? 6 : 8;
 
+		const baseColors = [
+			"bg-red-500/10 border border-red-500 border-opacity-50",
+			"bg-blue-500/10 border border-blue-500 border-opacity-70",
+			"bg-green-500/10 border border-green-500 border-opacity-70",
+			"bg-yellow-400/10 border border-yellow-400 border-opacity-70",
+			"bg-pink-500/10 border border-pink-500 border-opacity-70",
+			"bg-purple-500/10 border border-purple-500 border-opacity-70",
+			"bg-orange-500/10 border border-orange-500 border-opacity-70",
+			"bg-cyan-500/10 border border-cyan-500 border-opacity-70",
+		];
+
 		const fetchRepos = async () => {
 			try {
+				// Fetch GitHub repos
 				const res = await fetch("/api/github-repos");
-
-				if (!res.ok) {
-					console.error("GitHub API error:", res.status, await res.text());
-					return;
-				}
-
 				const repos: GitHubRepo[] = await res.json();
-				if (!Array.isArray(repos)) {
-					console.error("Expected array from GitHub API, got:", repos);
-					return;
-				}
-
 				const shuffled = repos.sort(() => 0.5 - Math.random());
 				const selected = shuffled.slice(0, repoNum);
 
-				const baseColors = [
-					"bg-red-500/10 border border-red-500 border-opacity-50",
-					"bg-blue-500/10 border border-blue-500 border-opacity-70",
-					"bg-green-500/10 border border-green-500 border-opacity-70",
-					"bg-yellow-400/10 border border-yellow-400 border-opacity-70",
-					"bg-pink-500/10 border border-pink-500 border-opacity-70",
-					"bg-purple-500/10 border border-purple-500 border-opacity-70",
-					"bg-orange-500/10 border border-orange-500 border-opacity-70",
-					"bg-cyan-500/10 border border-cyan-500 border-opacity-70",
-				];
-				const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
-
-				const bubbleData: BubbleData[] = await Promise.all(
+				const githubBubbles: BubbleData[] = await Promise.all(
 					selected.map(async (repo, index) => {
 						let languages: Record<string, number> = {};
 						try {
 							const langRes = await fetch(repo.languages_url);
 							languages = await langRes.json();
-						} catch (err) {
-							console.warn("Failed to fetch languages for", repo.name, err);
-						}
+						} catch {}
 
 						const allLangIcons = Object.keys(languages)
-							.map((lang) => {
-								const key = lang.toLowerCase();
-								return {
-									name: lang,
-									icon: languageToDevicon[key] || null,
-								};
-							})
+							.map((lang) => ({
+								name: lang,
+								icon: languageToDevicon[lang.toLowerCase()] || null,
+							}))
 							.filter((lang) => lang.icon);
 
 						const langKey = repo.language?.toLowerCase();
 
 						return {
 							...repo,
-							color: shuffledColors[index % shuffledColors.length],
+							repoUrl: repo.html_url,
+							color: baseColors[index % baseColors.length],
 							left: Math.random() * 80,
 							top: Math.random() * 80,
-							repoUrl: repo.html_url,
-							language: repo.language,
 							iconClass:
 								langKey && languageToDevicon[langKey]
 									? languageToDevicon[langKey]
@@ -151,7 +138,39 @@ export default function Project() {
 					})
 				);
 
-				setBubbles(bubbleData);
+				// Fetch custom projects
+				const customRes = await fetch("/data/custom-projects.json");
+				const customProjects = await customRes.json();
+
+				const customBubbles: BubbleData[] = customProjects.map(
+					(proj: any, idx: number) => {
+						const langKey = proj.language?.toLowerCase();
+
+						return {
+							id: proj.id ?? idx + 10000,
+							name: proj.name,
+							repoUrl: proj.repoUrl,
+							owner: proj.owner ?? { login: "you" },
+							created_at: proj.created_at ?? new Date().toISOString(),
+							updated_at: proj.updated_at ?? new Date().toISOString(),
+							color: baseColors[(idx + repoNum) % baseColors.length],
+							left: Math.random() * 80,
+							top: Math.random() * 80,
+							language: proj.language,
+							iconClass:
+								langKey && languageToDevicon[langKey]
+									? languageToDevicon[langKey]
+									: null,
+							allLanguages: proj.allLanguages ?? [],
+							spinDuration: 20 + Math.random() * 10,
+							spinDirection: Math.random() > 0.5 ? "normal" : "reverse",
+							readme: proj.readme ?? null,
+							readmePath: proj.readmePath ?? null,
+						};
+					}
+				);
+
+				setBubbles([...githubBubbles, ...customBubbles]);
 			} catch (err) {
 				console.error("Failed to fetch repos", err);
 			}
@@ -162,6 +181,7 @@ export default function Project() {
 
 	useEffect(() => {
 		if (!containerRef.current || bubbles.length === 0) return;
+
 		const container = containerRef.current;
 		const bubbleEls = Array.from(
 			container.querySelectorAll(".bubble")
@@ -175,7 +195,6 @@ export default function Project() {
 			x: (Math.random() - 0.5) * 2,
 			y: (Math.random() - 0.5) * 2,
 		}));
-
 		const isDragging = Array(bubbleEls.length).fill(false);
 		const dragOffset = Array(bubbleEls.length).fill({ x: 0, y: 0 });
 		const lastMousePos = Array(bubbleEls.length).fill({ x: 0, y: 0 });
@@ -189,7 +208,6 @@ export default function Project() {
 				e.preventDefault();
 				isDragging[i] = true;
 				const rect = bubble.getBoundingClientRect();
-				// const containerRect = container.getBoundingClientRect();
 				dragOffset[i] = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 				startPos[i] = { x: e.clientX, y: e.clientY };
 				lastMousePos[i] = { x: e.clientX, y: e.clientY };
@@ -225,7 +243,6 @@ export default function Project() {
 				const distX = e.clientX - startPos[i].x;
 				const distY = e.clientY - startPos[i].y;
 				const dragDistance = Math.sqrt(distX * distX + distY * distY);
-
 				if (dragDistance < 5) {
 					openModal(bubbles[i]);
 				}
@@ -284,8 +301,7 @@ export default function Project() {
 					Math.min(maxSpeed, velocities[i].y)
 				);
 
-				positions[i].x = newX;
-				positions[i].y = newY;
+				positions[i] = { x: newX, y: newY };
 				bubble.style.left = `${newX}px`;
 				bubble.style.top = `${newY}px`;
 			});
@@ -300,25 +316,19 @@ export default function Project() {
 		<section id="project" className="h-screen flex justify-center items-center">
 			<div
 				ref={containerRef}
-				className="relative w-[90vw] h-[150vw] lg:w-[75rem] lg:h-[70vh] flex justify-center items-center overflow-hidden transition-shadow duration-150"
+				className="relative w-[90vw] h-[150vw] lg:w-[75rem] lg:h-[70vh] flex justify-center items-center overflow-hidden"
 				data-aos="zoom-in"
 			>
-				{/* Background */}
 				<div
 					className={cn(
-						"absolute inset-0",
-						"[background-size:20px_20px]",
+						"absolute inset-0 [background-size:20px_20px]",
 						"[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
 						"dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
 					)}
 				/>
 				<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)] dark:bg-black" />
-				<div className="pointer-events-none absolute top-0 left-0 w-full h-24 z-10 bg-gradient-to-b from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
-				<div className="pointer-events-none absolute bottom-0 left-0 w-full h-24 z-10 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent dark:from-[rgba(0,0,0,0.7)]" />
-
-				{/* Central Label */}
-				<div className="absolute inset-0 flex justify-center items-center -z-10 select-none">
-					<i className="devicon-github-original text-4xl opacity-10 select-none" />
+				<div className="absolute inset-0 flex justify-center items-center -z-10">
+					<i className="devicon-github-original text-4xl opacity-10" />
 					&nbsp;
 					<HackerText
 						text="PROJECTS"
@@ -327,22 +337,21 @@ export default function Project() {
 						delay={10000}
 					/>
 					&nbsp;
-					<i className="devicon-github-original text-4xl opacity-10 select-none" />
+					<i className="devicon-github-original text-4xl opacity-10" />
 				</div>
 
-				{/* Bubbles */}
 				{bubbles.map((bubble, i) => (
 					<div
 						key={`${bubble.repoUrl}-${i}`}
-						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center transition-shadow duration-300`}
+						className={`bubble group absolute w-12 h-12 rounded-full ${bubble.color} flex items-center justify-center`}
 						style={{
 							left: `${bubble.left}%`,
 							top: `${bubble.top}%`,
 							animationName: "spin",
 							animationDuration: `${bubble.spinDuration}s`,
-							animationTimingFunction: "linear",
-							animationIterationCount: "infinite",
 							animationDirection: bubble.spinDirection,
+							animationIterationCount: "infinite",
+							animationTimingFunction: "linear",
 							touchAction: "none",
 							cursor: "grab",
 						}}
@@ -355,7 +364,7 @@ export default function Project() {
 
 				<div
 					ref={glowRef}
-					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20 transition-opacity duration-150"
+					className="absolute pointer-events-none bg-purple-400 rounded-full blur-[12px] opacity-0 z-20"
 					style={{ display: "none" }}
 				/>
 			</div>

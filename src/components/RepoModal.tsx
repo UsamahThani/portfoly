@@ -18,6 +18,7 @@ type RepoData = {
 	created_at: string;
 	updated_at: string;
 	allLanguages?: { name: string; icon: string | null }[];
+	readme?: string; // NEW: Custom README string
 };
 
 type RepoModalProps = {
@@ -31,7 +32,6 @@ export default function RepoModal({
 	onClose,
 	colorClass,
 }: RepoModalProps) {
-	// Always call hooks unconditionally
 	const [readme, setReadme] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<boolean>(false);
@@ -46,7 +46,37 @@ export default function RepoModal({
 	}, []);
 
 	useEffect(() => {
-		if (!repo?.owner?.login || !repo.name) return;
+		if (!repo) return;
+
+		// ✅ If direct README string exists (custom inline)
+		if (repo.readme) {
+			setReadme(repo.readme);
+			return;
+		}
+
+		// ✅ If local file path is provided (custom file-based)
+		if ((repo as any).readmePath) {
+			const loadMarkdown = async () => {
+				setLoading(true);
+				try {
+					const res = await fetch((repo as any).readmePath);
+					if (!res.ok) throw new Error("Failed to load markdown");
+					const md = await res.text();
+					setReadme(md);
+				} catch (err) {
+					console.error("Error loading local markdown:", err);
+					setError(true);
+					setReadme(null);
+				} finally {
+					setLoading(false);
+				}
+			};
+			loadMarkdown();
+			return;
+		}
+
+		// ✅ Fallback: fetch README from GitHub (default behavior)
+		if (!repo.owner?.login || !repo.name) return;
 
 		const fetchReadme = async () => {
 			setLoading(true);
@@ -123,19 +153,19 @@ export default function RepoModal({
 					transition={{ type: "spring", stiffness: 300, damping: 24 }}
 					onClick={(e) => e.stopPropagation()}
 				>
-					{/* Meteors */}
+					{/* Background meteors */}
 					<div className="absolute inset-0 z-0 pointer-events-none">
 						<Meteors number={30} />
 					</div>
 
-					{/* Foreground */}
+					{/* Foreground content */}
 					<div className="relative z-10 flex flex-col h-full text-white overflow-hidden">
 						{/* Title */}
 						<div className="text-2xl font-semibold text-center my-4">
 							<a
-								// href={repo.repoUrl}
-								href="/nothing2see"
+								href={repo.repoUrl || "#"}
 								rel="noopener noreferrer"
+								target="_blank"
 								className="text-neutral-100 relative inline-block after:content-[''] after:block after:h-[2px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full"
 							>
 								{repo.name || "Repository"}
@@ -159,14 +189,16 @@ export default function RepoModal({
 
 						{/* Dates */}
 						<div className="w-full px-4 flex justify-between text-sm text-neutral-400 select-none">
-							{/* Created Toggle */}
 							<h3
-								onClick={() => {
-									if (isTouchDevice()) setShowCreatedDate((prev) => !prev);
-								}}
-								onMouseEnter={() => {
-									if (!isTouchDevice()) setShowCreatedDate((prev) => !prev);
-								}}
+								onClick={() =>
+									isTouchDevice() && setShowCreatedDate((prev) => !prev)
+								}
+								onMouseEnter={() =>
+									!isTouchDevice() && setShowCreatedDate(true)
+								}
+								onMouseLeave={() =>
+									!isTouchDevice() && setShowCreatedDate(false)
+								}
 								className={cn(
 									"transition-colors duration-300",
 									isTouchDevice() ? "cursor-pointer" : "cursor-default"
@@ -183,14 +215,16 @@ export default function RepoModal({
 								</motion.span>
 							</h3>
 
-							{/* Updated Toggle */}
 							<h3
-								onClick={() => {
-									if (isTouchDevice()) setShowUpdatedDate((prev) => !prev);
-								}}
-								onMouseEnter={() => {
-									if (!isTouchDevice()) setShowUpdatedDate((prev) => !prev);
-								}}
+								onClick={() =>
+									isTouchDevice() && setShowUpdatedDate((prev) => !prev)
+								}
+								onMouseEnter={() =>
+									!isTouchDevice() && setShowUpdatedDate(true)
+								}
+								onMouseLeave={() =>
+									!isTouchDevice() && setShowUpdatedDate(false)
+								}
 								className={cn(
 									"transition-colors duration-300",
 									isTouchDevice() ? "cursor-pointer" : "cursor-default"
@@ -208,7 +242,7 @@ export default function RepoModal({
 							</h3>
 						</div>
 
-						{/* README Section */}
+						{/* README */}
 						<div className="flex-1 mt-4 overflow-y-auto px-4">
 							<div className="bg-white/10 backdrop-blur-md border border-gray-500/40 rounded-2xl p-6 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto scroll-smooth">
 								<h2 className="text-xl font-semibold mb-4">📘 README</h2>
@@ -239,7 +273,7 @@ export default function RepoModal({
 							</div>
 						</div>
 
-						{/* Close Button */}
+						{/* Close button */}
 						<button
 							onClick={onClose}
 							className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors duration-200 z-20"
