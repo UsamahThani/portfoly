@@ -23,7 +23,7 @@ export default function Profile() {
 						<HackerText text="USAMAH" className="text-[#8f8f8f]" />
 					</h1>
 					<h1 className="futura-med text-5xl lg:text-6xl tracking-wide lg:ml-37">
-						<HackerText text="THANI" className="text-gray-600" />
+						<HackerText text="TXHSN" className="text-gray-600" />
 					</h1>
 				</div>
 
