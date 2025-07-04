@@ -47,7 +47,7 @@ export default function Home() {
 			>
 				<Navbar />
 			</div>
-			<main className="px-4 py-4 lg:px-8">
+			<main className="">
 				<HomeSection />
 				<Profile />
 				<Project />

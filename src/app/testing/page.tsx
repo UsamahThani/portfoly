@@ -1,81 +1,82 @@
 "use client";
 
+import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+import { FloatingDock } from "@/components/ui/floating-dock";
 import { Meteors } from "@/components/ui/meteors";
+import {
+	IconBrandFacebook,
+	IconBrandGithub,
+	IconBrandTiktok,
+	IconBrandX,
+	IconExchange,
+	IconHome,
+	IconNewSection,
+	IconTerminal2,
+} from "@tabler/icons-react";
 
 export default function HomePage() {
+	const links = [
+		{
+			title: "Home",
+			icon: (
+				<IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "#home",
+		},
+		{
+			title: "Facebook",
+			icon: (
+				<IconBrandFacebook className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "/nothing2see",
+		},
+		{
+			title: "TikTok",
+			icon: (
+				<IconBrandTiktok className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "/nothing2see",
+		},
+
+		{
+			title: "Twitter",
+			icon: (
+				<IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "/nothing2see",
+		},
+		{
+			title: "GitHub",
+			icon: (
+				<IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "/nothing2see",
+		},
+	];
 	return (
-		<section className="relative w-screen h-screen flex flex-col justify-center items-center bg-black text-white">
-			<div className="relative w-300 h-200 backdrop-blur-sm rounded-3xl border border-indigo-400 p-3 overflow-hidden">
-				{/* Meteors in the background */}
-				<div className="absolute inset-0 z-0 pointer-events-none">
-					<Meteors number={30} />
+		<section
+			id="contact"
+			className="h-screen max-h-full flex justify-center items-center"
+		>
+			<BackgroundBeamsWithCollision>
+				<div className="flex flex-col">
+					<h2 className="text-2xl relative z-20 md:text-4xl lg:text-7xl font-bold text-center text-black dark:text-white font-sans tracking-tight mb-12">
+						I don't know how to do{" "}
+						<div className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))]">
+							<div className="absolute left-0 top-[1px] bg-clip-text bg-no-repeat text-transparent bg-gradient-to-r py-4 from-purple-500 via-violet-500 to-pink-500 [text-shadow:0_0_rgba(0,0,0,0.1)]">
+								<span className="">Portfolio Website.</span>
+							</div>
+							<div className="relative bg-clip-text text-transparent bg-no-repeat bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 py-4">
+								<span className="">Portfolio Website.</span>
+							</div>
+						</div>
+					</h2>
+					<FloatingDock
+						mobileClassName="translate-y-20" // only for demo, remove for production
+						items={links}
+					/>
 				</div>
-
-				{/* Foreground content */}
-				<div className="relative z-10 flex h-full flex-col items-start py-8">
-					<div className="w-full text-2xl flex justify-center my-2">
-						<a
-							href="#repo-link"
-							className="text-neutral-100 font-medium relative inline-block transition duration-200 after:content-[''] after:block after:h-[2px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full"
-						>
-							REPO NAME
-						</a>
-					</div>
-
-					{/* Repo languages */}
-					<div className="flex w-full justify-center gap-4 items-center">
-						<div className="rounded-full border w-10 h-10 flex items-center justify-center  bg-gray-500">
-							{/* some language icon from devicon connect with github api */}
-						</div>
-						<div className="rounded-full border w-10 h-10 flex items-center justify-center  bg-gray-500">
-							{/* some language icon from devicon connect with github api */}
-						</div>
-						<div className="rounded-full border w-10 h-10 flex items-center justify-center  bg-gray-500">
-							{/* some language icon from devicon connect with github api */}
-						</div>
-						<div className="rounded-full border w-10 h-10 flex items-center justify-center  bg-gray-500">
-							{/* some language icon from devicon connect with github api */}
-						</div>
-						<div className="rounded-full border w-10 h-10 flex items-center justify-center  bg-gray-500">
-							{/* some language icon from devicon connect with github api */}
-						</div>
-					</div>
-					{/* dates */}
-					<div className="w-full px-20 mt-20 mb-2 flex justify-between">
-						<h3>Created Date</h3>
-						<h3>Updated Date</h3>
-					</div>
-
-					{/* ReadMe */}
-					<div className="w-full px-20 flex-1">
-						<div className="w-full h-full bg-white/10 backdrop-blur-md border border-gray-500/40 rounded-2xl p-6 text-white shadow-lg overflow-y-auto scroll-smooth">
-							<h2 className="text-xl font-semibold mb-4">📘 README</h2>
-							<p className="mb-4 text-sm text-neutral-200">
-								Welcome to this project! Here's a brief overview of what it
-								does.
-							</p>
-							<ul className="list-disc list-inside space-y-2 text-sm text-neutral-300">
-								<li>Clean minimalist layout</li>
-								<li>React + Tailwind + GitHub integration</li>
-								<li>Cool frosted glass README container</li>
-								<li>Responsive and aesthetic UI</li>
-								<li>Hoverable links and glowing meteors!</li>
-							</ul>
-							<p className="mt-6 text-sm text-neutral-400">
-								To get started, clone the repo and run:
-							</p>
-							<pre className="bg-white/20 text-white text-sm p-4 mt-2 rounded-xl overflow-x-auto">
-								<code>
-									{`git clone https://github.com/yourname/yourrepo
-cd yourrepo
-npm install
-npm run dev`}
-								</code>
-							</pre>
-						</div>
-					</div>
-				</div>
-			</div>
+			</BackgroundBeamsWithCollision>
 		</section>
 	);
 }
