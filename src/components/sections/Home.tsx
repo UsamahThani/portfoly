@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import ParticlesBackground from "@/components/ui/particles-background";
 
 export default function Home() {
 	useEffect(() => {
@@ -29,6 +30,7 @@ export default function Home() {
 			id="home"
 			className="max-w-full h-screen flex justify-center items-center relative bg-black"
 		>
+			<ParticlesBackground />
 			<div className="relative w-[500px] h-[500px]" data-aos="zoom-in">
 				{/* Static Centered Image */}
 				<Image

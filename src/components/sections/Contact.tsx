@@ -5,12 +5,9 @@ import { FloatingDock } from "@/components/ui/floating-dock";
 import {
 	IconBrandFacebook,
 	IconBrandGithub,
-	IconBrandTiktok,
+	IconBrandLinkedin,
 	IconBrandX,
-	IconExchange,
 	IconHome,
-	IconNewSection,
-	IconTerminal2,
 } from "@tabler/icons-react";
 
 export default function Contact() {
@@ -30,9 +27,16 @@ export default function Contact() {
 			href: "/nothing2see",
 		},
 		{
-			title: "TikTok",
+			title: "GitHub",
 			icon: (
-				<IconBrandTiktok className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+				<IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+			),
+			href: "/nothing2see",
+		},
+		{
+			title: "LinkedIn",
+			icon: (
+				<IconBrandLinkedin className="h-full w-full text-neutral-500 dark:text-neutral-300" />
 			),
 			href: "/nothing2see",
 		},
@@ -41,13 +45,6 @@ export default function Contact() {
 			title: "Twitter",
 			icon: (
 				<IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-			),
-			href: "/nothing2see",
-		},
-		{
-			title: "GitHub",
-			icon: (
-				<IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
 			),
 			href: "/nothing2see",
 		},

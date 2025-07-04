@@ -18,7 +18,7 @@ type RepoData = {
 	created_at: string;
 	updated_at: string;
 	allLanguages?: { name: string; icon: string | null }[];
-	readme?: string; // NEW: Custom README string
+	readme?: string;
 };
 
 type RepoModalProps = {
@@ -38,6 +38,8 @@ export default function RepoModal({
 	const [showCreatedDate, setShowCreatedDate] = useState(false);
 	const [showUpdatedDate, setShowUpdatedDate] = useState(false);
 
+	const externalRedirectEnabled = false; // ✅ Toggle this to enable/disable external GitHub link
+
 	useEffect(() => {
 		document.body.style.overflow = "hidden";
 		return () => {
@@ -48,13 +50,11 @@ export default function RepoModal({
 	useEffect(() => {
 		if (!repo) return;
 
-		// ✅ If direct README string exists (custom inline)
 		if (repo.readme) {
 			setReadme(repo.readme);
 			return;
 		}
 
-		// ✅ If local file path is provided (custom file-based)
 		if ((repo as any).readmePath) {
 			const loadMarkdown = async () => {
 				setLoading(true);
@@ -75,7 +75,6 @@ export default function RepoModal({
 			return;
 		}
 
-		// ✅ Fallback: fetch README from GitHub (default behavior)
 		if (!repo.owner?.login || !repo.name) return;
 
 		const fetchReadme = async () => {
@@ -163,9 +162,13 @@ export default function RepoModal({
 						{/* Title */}
 						<div className="text-2xl font-semibold text-center my-4">
 							<a
-								href={repo.repoUrl || "#"}
-								rel="noopener noreferrer"
-								target="_blank"
+								href={
+									externalRedirectEnabled ? repo.repoUrl || "#" : "/nothing2see"
+								}
+								rel={
+									externalRedirectEnabled ? "noopener noreferrer" : undefined
+								}
+								target={externalRedirectEnabled ? "_blank" : "_self"}
 								className="text-neutral-100 relative inline-block after:content-[''] after:block after:h-[2px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full"
 							>
 								{repo.name || "Repository"}
